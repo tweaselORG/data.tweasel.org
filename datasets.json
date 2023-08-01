@@ -1,0 +1,37 @@
+[
+    {
+        "slug": "monkey-july-2023",
+        "title": "Traffic collection for TrackHAR adapter work (July 2023)",
+        "description": "For writing new adapters for TrackHAR and properly documenting the old ones, Benni ran a traffic collection on 804 apps on Android and 1062 apps on iOS from the top charts.\n\nThe Android apps were run in an Android 11 emulator for 60 seconds, receving random input from `adb monkey`, as such it is possible/likely that consent was given when requested. The iOS apps were run on a physical iPhone X running iOS 15.6.1 for 60 seconds without any interaction.",
+        "url": "https://github.com/tweaselORG/experiments/issues/1",
+        "sourceCodeUrl": "https://github.com/tweaselORG/experiments/tree/main/monkey-july-2023"
+    },
+    {
+        "slug": "worrying-confessions",
+        "title": "Worrying confessions: A look at data safety labels on Android",
+        "description": "In 2022, the Google Play Store introduced a data safety section in order to give users accessible insights into apps’ data collection practices. To verify the declarations, Benni recorded the network traffic of 500 apps, finding more than one quarter of them transmitting tracking data not declared in their data safety label.\n\nThe apps were run for 60 seconds in an Android 11 emulator without any user input.",
+        "url": "https://www.datarequests.org/blog/android-data-safety-labels-analysis/",
+        "sourceCodeUrl": "https://github.com/datenanfragen/android-data-safety-label-analysis"
+    },
+    {
+        "slug": "informed-consent",
+        "title": "Informed Consent? A Study of “Consent Dialogs” on Android and iOS",
+        "description": "Consent dialogs have become ubiquitous with seemingly every website and app pleading users to agree to their personal data being processed and their behaviour being tracked, often with the help of tens or even hundreds of third-party companies. For his master’s thesis, Benni studied consent dialogs on Android and iOS in an automated and dynamic manner, analysing 4,388 popular apps from both platforms. Among other things, he measured the effect of the user’s choice in the consent dialog by comparing the traffic from before any interaction with the traffic after accepting and rejecting the dialog and analysing contacted trackers and transmitted data types.\n\nThe apps were initially run for 60 seconds without interaction in an Android 11 emulator and on a physical iPhone 7 running iOS 14.8. In the runs of requests with a `runType` of `no-interaction`, nothing else was done. For the ones with `consent-dialog-accepted`, after 60 seconds, a discovered consent dialog was accepted and then they were left running without interaction for another 60 seconds. The same was done for the ones with `consent-dialog-rejected`, but the consent dialog was rejected here.",
+        "url": "https://benjamin-altpeter.de/doc/thesis-consent-dialogs.pdf",
+        "sourceCodeUrl": "https://github.com/baltpeter/thesis-mobile-consent-dialogs"
+    },
+    {
+        "slug": "ios-watching-you",
+        "title": "iOS watching you: Automated analysis of “zero-touch” privacy violations under iOS",
+        "description": "As a follow-up project to the “Do they track?”, Benni also looked at the iOS ecosystem. He ended up analysing 1,001 apps from the top charts of the German App Store as of May 2021.\n\nThe apps were run for 60 seconds without interaction on a physical iPhone 8 running iOS 14.5.1.",
+        "url": "https://benjamin-altpeter.de/doc/presentation-ios-privacy.pdf",
+        "sourceCodeUrl": "https://github.com/baltpeter/ios-privacy-violations"
+    },
+    {
+        "slug": "do-they-track",
+        "title": "Do they track? Automated analysis of Android apps for privacy violations",
+        "description": "To get a grasp of how common and extensive data collection in Android apps really is, Malte and Benni developed a series of scripts to download, install and start Android apps in an emulator and to collect and analyse their network traffic.\n\nThe apps were run for 60 seconds in an Android 11 emulator without any user input, meaning that no consent was given.",
+        "url": "https://benjamin-altpeter.de/doc/presentation-android-privacy.pdf",
+        "sourceCodeUrl": null
+    }
+]

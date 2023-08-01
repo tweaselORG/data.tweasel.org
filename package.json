@@ -1,0 +1,22 @@
+{
+    "name": "data.tweasel.org",
+    "version": "0.0.0",
+    "main": "index.js",
+    "author": "Benjamin Altpeter <hi@bn.al>",
+    "license": "CC0-1.0",
+    "private": true,
+    "dependencies": {
+        "better-sqlite3": "^8.5.0",
+        "fs-extra": "^11.1.1",
+        "sqlite-regex": "^0.2.3",
+        "tsx": "^3.12.7",
+        "yesno": "^0.4.0"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.4",
+        "@types/fs-extra": "^11.0.1"
+    },
+    "scripts": {
+        "make-database": "tsx scripts/make-database.ts"
+    }
+}

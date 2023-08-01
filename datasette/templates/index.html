@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Tweasel open data Datasette instance{% endblock %}
+
+{% block body_class %}index{% endblock %}
+
+{% block content %}
+<style>
+    #tweasel-home {
+        max-width: 960px;
+    }
+    #tweasel-home ul {
+        list-style: revert;
+        margin: revert;
+        padding: revert;
+    }
+</style>
+<div id="tweasel-home">
+    <h1>Tweasel open data Datasette instance</h1>
+
+    <p>Tweasel is a project building infrastructure for detecting and complaining about tracking and privacy violations in mobile apps on Android and iOS. Among other things, we are developing a suite of tools and libraries for automated app analysis and tracking detection, and maintaining a <a href="https://trackers.tweasel.org/">wiki of HTTP endpoints used by tracking companies</a> (for a full overview of what we’re doing, have a look at our <a href="https://docs.tweasel.org/">documentation</a>).</p>
+
+    <p>For our work, we regularly run large-scale traffic analyses on mobile apps. We are using this data for example to maintain the tracking endpoint adapters of our <a href="https://github.com/tweaselORG/TrackHAR">TrackHAR library</a>. Our goal is to shine a light on how trackers work and what they collect, and as such we of course want as many people as possible researching them. In addition, we want to provide documentation on why/how we have concluded what certain values transmitted to a tracking endpoint mean, and do so in a way that is replicable by others.</p>
+
+    <p>As such, we are publishing our datasets as open data for other researchers, activists, and anyone else who is interested in understanding the inner workings of trackers. We hope to thereby lower the barrier of entry for people to start investigating trackers themselves.</p>
+
+    {% for database in databases %}
+        <h2 style="padding-left: 10px; border-left: 10px solid #{{ database.color }}"><a href="{{ urls.database(database.name) }}">{{ database.name }}</a>{% if database.private %} 🔒{% endif %}</h2>
+        <p>
+            {% if database.show_table_row_counts %}{{ "{:,}".format(database.table_rows_sum) }} rows in {% endif %}{{ database.tables_count }} table{% if database.tables_count != 1 %}s{% endif %}{% if database.tables_count and database.hidden_tables_count %}, {% endif -%}
+            {% if database.hidden_tables_count -%}
+                {% if database.show_table_row_counts %}{{ "{:,}".format(database.hidden_table_rows_sum) }} rows in {% endif %}{{ database.hidden_tables_count }} hidden table{% if database.hidden_tables_count != 1 %}s{% endif -%}
+            {% endif -%}
+            {% if database.views_count -%}
+                {% if database.tables_count or database.hidden_tables_count %}, {% endif -%}
+                {{ "{:,}".format(database.views_count) }} view{% if database.views_count != 1 %}s{% endif %}
+            {% endif %}
+        </p>
+        <p>{% for table in database.tables_and_views_truncated %}<a href="{{ urls.table(database.name, table.name) }}"{% if table.count %} title="{{ table.count }} rows"{% endif %}>{{ table.name }}</a>{% if table.private %} 🔒{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}{% if database.tables_and_views_more %}, <a href="{{ urls.database(database.name) }}">...</a>{% endif %}</p>
+    {% endfor %}
+
+    <h2 id="datasets">Datasets</h2>
+
+    <p>Currently, requests from the following datasets are available, of which the first three were collected as part of student research projects at the <a href="https://www.tu-braunschweig.de/en/ias">Institute for Application Security</a> at TU Braunschweig (more details in the <a href="/data/datasets"><code>datasets</code> table</a>):</p>
+
+    <ul>
+        <li><a href="https://benjamin-altpeter.de/doc/presentation-android-privacy.pdf">Do they track? Automated analysis of Android apps for privacy violations</a> (data from January 2021, <a href="/data/requests?dataset=do-they-track">view requests</a>)</li>
+        <li><a href="https://benjamin-altpeter.de/doc/presentation-ios-privacy.pdf">iOS watching you: Automated analysis of “zero-touch” privacy violations under iOS</a> (data from June to July 2021, <a href="/data/requests?dataset=ios-watching-you">view requests</a>)</li>
+        <li><a href="https://benjamin-altpeter.de/doc/thesis-consent-dialogs.pdf">Informed Consent? A Study of “Consent Dialogs” on Android and iOS</a> (data from March to April 2022, <a href="/data/requests?dataset=informed-consent">view requests</a>)</li>
+        <li><a href="https://www.datarequests.org/blog/android-data-safety-labels-analysis/">Worrying confessions: A look at data safety labels on Android</a> (data from September 2022, <a href="/data/requests?dataset=worrying-confessions">view requests</a>)</li>
+        <li><a href="https://github.com/tweaselORG/experiments/issues/1">Traffic collection for TrackHAR adapter work (July 2023)</a> (data from July 2023, <a href="/data/requests?dataset=monkey-july-2023">view requests</a>)</li>
+    </ul>
+
+    <p><strong>Note</strong>: We have decided to only publish requests to endpoints that are contacted by apps from at least two different vendors, using <a href="https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor">Apple’s definition for determining the vendor from the app ID</a>. As such, our data is not suited for reverse-engineering internal app APIs.</p>
+
+    <h2 id="web-interface">Web interface</h2>
+
+    <p>We are publishing the data as a <a href="https://datasette.io/">Datasette</a> instance, which allows you to interactively explore the full data online, including running arbitrary SQL queries against it. Here are just a few examples of interesting things you can look at:</p>
+
+    <ul>
+        <li><a href="/data?sql=select+count(1)+count%2C+endpointUrl+from+requests+where+endpointUrl+is+not+null%0D%0Agroup+by+endpointUrl++order+by+count+desc+limit+101%3B">the endpoints that were contacted most often</a> or <a href="/data?sql=select+count(distinct+regex_replace('%40.%2B%3F%24'%2C+coalesce(initiator%2C+'%3Cno+app+ID%3E')%2C+''))+appCount%2C+count(1)+requestCount%2C+endpointUrl+from+requests%0D%0Awhere+endpointUrl+is+not+null%0D%0Agroup+by+endpointUrl++order+by+appCount+desc+limit+101%3B">by the most apps</a></li>
+        <li><a href="/data?sql=select+*+from+requests%0D%0Awhere+host+like+'%25'+%7C%7C+%3Ahost+%7C%7C+'%25'%0D%0Aorder+by+length(content)+%2B+length(path)+%2B+length(headers)+%2B+length(cookies)+desc+limit+101%3B&amp;host=doubleclick.net">requests to a particular host, e.g. <code>doubleclick.net</code>, ordered by length</a></li>
+        <li><a href="/data?sql=select+*+from+requests%0D%0Awhere+initiator+like+%3AappId+%7C%7C+'%40%25'%0D%0Alimit+101%3B&amp;appId=com.airbnb.android">requests by a particular app, e.g. Airbnb on Android</a></li>
+        <li><a href="/data?sql=select+*+from+requests%0D%0Aorder+by+json_array_length(cookies)+desc%0D%0Alimit+101%3B">the requests setting the most cookies</a></li>
+        <li><a href="/data?sql=select+*+from+requests%0D%0AWHERE+content+like+'%25'+%7C%7C+%3Aneedle+%7C%7C+'%25'+or+path+like+'%25'+%7C%7C+%3Aneedle+%7C%7C+'%25'+or+headers+like+'%25'+%7C%7C+%3Aneedle+%7C%7C+'%25'+or+cookies+like+'%25'+%7C%7C+%3Aneedle+%7C%7C+'%25'%0D%0Alimit+101+collate+nocase%3B&amp;needle=ea70edc1-ac05-481c-8d2a-66b1be496a7e">requests containing a particular value anywhere, e.g. an advertising ID</a></li>
+        <li><a href="/data?sql=with+appIds+as+(%0D%0A++select+platform%2C+regex_replace('%40.%2B%3F%24'%2C+coalesce(initiator%2C+'')%2C+'')+appId+from+requests%0D%0A)%0D%0A%0D%0Aselect+distinct+appId+from+appIds+where+platform+%3D+'android'+and+exists+(%0D%0A++select+1+from+appIds+a+where+a.appId+%3D+appIds.appId+and+platform+%3D+'ios'%0D%0A)+and+appId+is+not+''+order+by+appId%3B">app IDs that exist on both Android and iOS</a></li>
+        <li><a href="/data?sql=select+*+from+requests%0D%0Awhere+runType+%3D+'consent-dialog-accepted'+and+initiator+is+not+null+and+not+exists+(%0D%0A++select+*+from+requests+r+where+r.initiator+%3D+requests.initiator+and+r.endpointUrl+%3D+requests.endpointUrl+and+r.runType+%3D+'no-interaction'%0D%0A)%0D%0Alimit+101%3B">requests to endpoints that were only contacted by an app after a consent dialog was accepted</a></li>
+        <li><a href="/data?sql=select+length(content)+%2B+length(path)+%2B+length(headers)+%2B+length+(cookies)+as+length%2C+*+from+requests%0D%0Aorder+by+length+desc%0D%0Alimit+101%3B">the longest requests</a></li>
+    </ul>
+
+    <p>Datasette and the plugins we have installed have lots of additional features that you may find helpful. You can for example:</p>
+
+    <ul>
+        <li>Copy data in various formats, e.g. some details about the ten latest requests as <a href="/data.copyable?sql=select+startTime%2C+initiator%2C+platform%2C+endpointUrl+from+requests+order+by+startTime+desc+limit+10%3B&_table_format=github">a Markdown table</a>, <a href="/data.csv?sql=select+startTime%2C+initiator%2C+platform%2C+endpointUrl+from+requests+order+by+startTime+desc+limit+10%3B&_size=max">CSV</a>, or <a href="/data.json?_shape=array&sql=select+startTime%2C+initiator%2C+platform%2C+endpointUrl+from+requests+order+by+startTime+desc+limit+10%3B">JSON</a></li>
+        <li><a href="/graphql">Use the data as a GraphQL API</a></li>
+        <li>Query using regular expressions thanks to the <a href="https://github.com/asg017/sqlite-regex"><code>sqlite-regex</code> extension</a></li>
+        <li>Query JSON values using <a href="https://jqlang.github.io/jq/manual/"><code>jq</code></a> thanks to <a href="https://github.com/simonw/datasette-jq"><code>datasette-jq</code></a></li>
+        <li><a href="/data.db">Download the full SQLite database</a> for local analysis</li>
+    </ul>
+</div>
+
+{% endblock %}
