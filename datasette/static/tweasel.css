@@ -1,0 +1,29 @@
+table.rows-and-columns td {
+    max-width: 500px;
+    overflow: scroll;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+}
+
+textarea.tweasel-long-cell {
+    width: 500px;
+    height: 75px;
+    margin: -2px;
+    border: none;
+    font-size: 0.9em;
+    resize: vertical;
+}
+
+button.tweasel-toggle-button {
+    color: #007bff;
+    background-color: #fff;
+    border-color: #007bff;
+    cursor: pointer;
+    text-align: center;
+    border-width: 1px;
+    font-size: 0.8rem;
+    line-height: 1;
+    border-radius: 0.25rem;
+    margin-bottom: 4px;
+    float: right;
+}

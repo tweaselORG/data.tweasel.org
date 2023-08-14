@@ -12,6 +12,8 @@
         }
     },
 
+    "extra_css_urls": ["/static/tweasel.css"],
+
     "plugins": {
         "datasette-cors": {
             "host_wildcards": ["https://*.tweasel.org"]
