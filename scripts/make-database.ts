@@ -46,7 +46,7 @@ create table "requests" (
     "startTime" text not null,
     "method" text not null,
     "httpVersion" text,
-    "endpointUrl" text,
+    "endpointUrl" text not null,
     "scheme" text,
     "host" text not null,
     "port" integer,
@@ -65,14 +65,16 @@ create table "requests" (
 insert into requests
     select id, dataset, initiator, platform, runType, startTime, method, httpVersion, endpointUrl, scheme, host, port, path, content, headers, cookies from (
         with vendors as materialized (
-            select id, dataset, initiator, platform, runType, startTime, method, httpVersion, endpointUrl, scheme, host, port, path, content, headers, cookies,
-            case
-                when initiator is null then null
-                when instr(initiator,'.') = 0 then initiator
-                else regex_replace('\\.[^.]+@.+?$', initiator, '')
-              end as vendor,
-             -- For the 'do-they-track' requests, we don't know the scheme. But it really doesn't make sense to consider that for this, anyway.
-             regex_replace('\\?.+$', host || path, '')  as _endpointUrl
+            select id, dataset, initiator, platform, runType, startTime, method, httpVersion, scheme, host, port, path, content, headers, cookies,
+                case
+                    when initiator is null then null
+                    when instr(initiator,'.') = 0 then initiator
+                    else regex_replace('\\.[^.]+@.+?$', initiator, '')
+                end as vendor,
+                -- For the 'do-they-track' requests, we don't know the scheme, so we guess 'https'. That is reasonable considering that less than 0.5 % of requests in the rest of the dataset use 'http'.
+                coalesce(endpointUrl, regex_replace('\\?.+$', coalesce(scheme, 'https://') || host || path, '')) as endpointUrl,
+                -- For counting the endpoints, it doesn't make sense to consider the scheme in either case.
+                regex_replace('\\?.+$', host || path, '')  as _endpointForCounting
             from (
                 ${datasets.map((d) => `select * from '${d.slug}'.requests`).join('\nunion all\n')}
             )
@@ -80,10 +82,10 @@ insert into requests
 
         select * from vendors where
             -- Only include requests that are made to the same endpointUrl by apps from at least two different vendors (https://github.com/tweaselORG/meta/issues/33#issuecomment-1658348929).
-            _endpointUrl in (
-                select _endpointUrl from vendors group by _endpointUrl having count(distinct vendor) >= 2
+            _endpointForCounting in (
+                select _endpointForCounting from vendors group by _endpointForCounting having count(distinct vendor) >= 2
                 union
-                select _endpointUrl from vendors where vendor is null
+                select _endpointForCounting from vendors where vendor is null
             )
             -- Filter out iOS system background traffic as that may contain authentication values (https://github.com/tweaselORG/meta/issues/33#issuecomment-1660099572),
             and (not platform = 'ios' or initiator is not null)
