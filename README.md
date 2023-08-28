@@ -35,4 +35,6 @@ We are using the following Datasette plugins:
 * datasette-graphql
 * datasette-jq
 * datasette-sqlite-regex
+* datasette-sqlite-url
+* datasette-sqlite-path
 * datasette-cors
