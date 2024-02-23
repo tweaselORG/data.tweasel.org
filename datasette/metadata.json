@@ -16,7 +16,7 @@
 
     "plugins": {
         "datasette-cors": {
-            "host_wildcards": ["https://*.tweasel.org"]
+            "host_wildcards": ["https://*.tweasel.org", "http://localhost:*"]
         }
     }
 }
