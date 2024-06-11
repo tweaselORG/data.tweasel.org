@@ -1,0 +1,9 @@
+{% extends "default:row.html" %}
+
+{% block content %}
+{{ super() }}
+
+<p>
+    <a href="https://trackers.tweasel.org/trackhar/#!request-id={{ ','.join(primary_key_values) }}">Analyze this request using TrackHAR</a>
+</p>
+{% endblock %}
