@@ -492,6 +492,24 @@ sqlite-regex@^0.2.3:
     sqlite-regex-linux-x64 "0.2.3"
     sqlite-regex-windows-x64 "0.2.3"
 
+sqlite-url-darwin-x64@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/sqlite-url-darwin-x64/-/sqlite-url-darwin-x64-0.1.0.tgz#367bb63203b5d555366de1bdca9da3d3a0bcdd44"
+  integrity sha512-E7AMMTFMik4eSisE09+/fQIjHf2z4sKT8J7BcL80nTQuoz9+DiNLi0M9ZqygnK5Gp9gmrxD3Ds2Ti6zabGF8mQ==
+
+sqlite-url-linux-x64@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/sqlite-url-linux-x64/-/sqlite-url-linux-x64-0.1.0.tgz#e398494afd47fd5a70324b38ecd1c310b948f6c9"
+  integrity sha512-lviHGy7/UjbncL5ORklBhixQLAfhX1913M4rJfqGslN3eNckN6y6RlRo/N1PmJIz0Lb8uJu596wmI67OxOudFw==
+
+sqlite-url@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/sqlite-url/-/sqlite-url-0.1.0.tgz#3e1712b2b9dc3741bcf3b11c8c36607aa4ada9f6"
+  integrity sha512-/nuI5ouS5HHP7a22KNaFkYFsTRE9VaJvLiUMeBliv9K09s2DeWTCiF025RrF7Jj7s2TSiCnhMB5N+ODD2TqjBg==
+  optionalDependencies:
+    sqlite-url-darwin-x64 "0.1.0"
+    sqlite-url-linux-x64 "0.1.0"
+
 string_decoder@^1.1.1:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-1.3.0.tgz#42f114594a46cf1a8e30b0a84f56c78c3edac21e"

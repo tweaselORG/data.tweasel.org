@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import yesno from 'yesno';
-import * as sqlite_regex from 'sqlite-regex';
+import * as sqliteRegex from 'sqlite-regex';
+import * as sqliteUrl from 'sqlite-url';
 import fse from 'fs-extra';
 import datasets from '../datasets.json';
 
@@ -14,7 +15,8 @@ import datasets from '../datasets.json';
     }
 
     const db = new Database('datasette/data.db');
-    db.loadExtension(sqlite_regex.getLoadablePath());
+    db.loadExtension(sqliteRegex.getLoadablePath());
+    db.loadExtension(sqliteUrl.getLoadablePath());
     db.pragma('journal_mode = WAL');
 
     // Create and fill `datasets` table.
@@ -69,6 +71,7 @@ insert into requests
                 case
                     when initiator is null then null
                     when instr(initiator,'.') = 0 then initiator
+                    when instr(initiator,'@') = 0 then url_host(initiator)
                     else regex_replace('\\.[^.]+@.+?$', initiator, '')
                 end as vendor,
                 -- For the 'do-they-track' requests, we don't know the scheme, so we guess 'https'. That is reasonable considering that less than 0.5 % of requests in the rest of the dataset use 'http'.
@@ -81,7 +84,7 @@ insert into requests
         )
 
         select * from vendors where
-            -- Only include requests that are made to the same endpointUrl by apps from at least two different vendors (https://github.com/tweaselORG/meta/issues/33#issuecomment-1658348929).
+            -- Only include requests that are made to the same endpointUrl by apps/websites from at least two different vendors/hosts (https://github.com/tweaselORG/meta/issues/33#issuecomment-1658348929).
             _endpointForCounting in (
                 select _endpointForCounting from vendors group by _endpointForCounting having count(distinct vendor) >= 2
                 union

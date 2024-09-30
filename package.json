@@ -9,6 +9,7 @@
         "better-sqlite3": "^8.5.0",
         "fs-extra": "^11.1.1",
         "sqlite-regex": "^0.2.3",
+        "sqlite-url": "^0.1.0",
         "tsx": "^3.12.7",
         "yesno": "^0.4.0"
     },
