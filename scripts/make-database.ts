@@ -84,9 +84,14 @@ insert into requests
         )
 
         select * from vendors where
-            -- Only include requests that are made to the same endpointUrl by apps/websites from at least two different vendors/hosts (https://github.com/tweaselORG/meta/issues/33#issuecomment-1658348929).
+            -- Only include requests that are made to the same endpointUrl by apps from at least two different vendors/websites from at least ten different hosts (https://github.com/tweaselORG/meta/issues/33#issuecomment-1658348929).
             _endpointForCounting in (
-                select _endpointForCounting from vendors group by _endpointForCounting having count(distinct vendor) >= 2
+                select _endpointForCounting
+                from vendors
+                group by _endpointForCounting
+                having
+                    (count(distinct vendor) >= 10 and platform = 'web') or
+                    (count(distinct vendor) >= 2 and platform != 'web')
                 union
                 select _endpointForCounting from vendors where vendor is null
             )
