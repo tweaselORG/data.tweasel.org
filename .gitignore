@@ -1,6 +1,6 @@
 datasets/*.db
 data.db
-
+datasette/inspect-data.json
 
 *.db-shm
 *.db-wal

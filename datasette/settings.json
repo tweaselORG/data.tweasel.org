@@ -1,5 +1,6 @@
 {
     "facet_time_limit_ms": 1000,
     "sql_time_limit_ms": 50000,
-    "suggest_facets": false
+    "suggest_facets": false,
+    "allow_download": true
 }
