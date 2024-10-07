@@ -18,7 +18,7 @@ def is_human_readable_text(value):
 
 def as_base64(value):
     if isinstance(value, str):
-        return base64.b64encode(value.encode("utf-8")).decode("utf-8")
+        return base64.b64encode(value.encode("utf-8", "backslashreplace")).decode("utf-8")
     elif isinstance(value, bytes):
         return base64.b64encode(value).decode("utf-8")
     else:
@@ -42,7 +42,7 @@ def render_cell(value, column, row):
         value = ''
 
     make_textarea = lambda v: Markup(
-        '<textarea class="tweasel-long-cell" readonly>{}</textarea>'.format(escape(v))
+        '<textarea class="tweasel-long-cell" readonly>{}</textarea>'.format(escape(v).encode("utf-8", "backslashreplace").decode("utf-8"))
     )
 
     if column in ("headers", "cookies") and value.startswith("[") and value.endswith("]"):
