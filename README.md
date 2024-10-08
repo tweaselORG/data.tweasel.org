@@ -8,6 +8,8 @@ The main database is created dynamically, combining the datasets into a single `
 
 Then, you can run `yarn make-database` to create the database. This will (re-)create and correctly configure `datasette/data.db`.
 
+Generate the cache file by running `cd datasette && datasette inspect data.db --inspect-file=inspect-data.json`.
+
 ## Running Datasette
 
 We are using Datasette in [configuration directory mode](https://docs.datasette.io/en/stable/settings.html#configuration-directory-mode), as such you only need to pass that folder to get the correct configuration:
@@ -26,6 +28,7 @@ To add a new dataset, you need to:
 4. Add the dataset and its metadata to `datasets.json`.
 5. Mention the dataset in `datasette/templates/index.html` (in the "Datasets" section).
 6. Run `yarn make-database` to recreate the main database.
+7. Regenerate the cache file by running `cd datasette && datasette inspect data.db --inspect-file=inspect-data.json`.
 
 ## Plugins
 
