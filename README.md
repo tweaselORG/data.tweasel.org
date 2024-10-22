@@ -41,3 +41,7 @@ We are using the following Datasette plugins:
 * datasette-sqlite-url
 * datasette-sqlite-path
 * datasette-cors
+
+TODO:
+
+* Needs datasette-parquet, pytz

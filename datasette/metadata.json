@@ -17,6 +17,11 @@
     "plugins": {
         "datasette-cors": {
             "host_wildcards": ["https://*.tweasel.org", "http://localhost:*"]
+        },
+        "datasette-parquet": {
+            "data": {
+                "file": "./datasette/data.duckdb"
+            }
         }
     }
 }

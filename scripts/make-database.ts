@@ -1,26 +1,34 @@
-import Database from 'better-sqlite3';
 import yesno from 'yesno';
-import * as sqliteRegex from 'sqlite-regex';
-import * as sqliteUrl from 'sqlite-url';
 import fse from 'fs-extra';
 import datasets from '../datasets.json';
+import duckdb from 'duckdb';
+import { promisify } from 'util';
 
 (async () => {
-    if (await fse.pathExists('datasette/data.db')) {
+    if (await fse.pathExists('datasette/data.duckdb')) {
         const ok = await yesno({
-            question: 'This will delete and recreate your existing `datasette/data.db`. Do you want to continue?',
+            question: 'This will delete and recreate your existing `datasette/data.duckdb`. Do you want to continue?',
         });
         if (!ok) process.exit(1);
-        await fse.remove('datasette/data.db');
+        await fse.remove('datasette/data.duckdb');
     }
 
-    const db = new Database('datasette/data.db');
-    db.loadExtension(sqliteRegex.getLoadablePath());
-    db.loadExtension(sqliteUrl.getLoadablePath());
-    db.pragma('journal_mode = WAL');
+    const db = new duckdb.Database('datasette/data.duckdb');
+
+    db.register_udf('url_host', 'text', (url) => {
+        try {
+            const u = new URL(url);
+            return u.hostname;
+        } catch {
+            return null;
+        }
+    });
+
+    // Srsly, callbacks?
+    const db_exec = promisify(db.exec.bind(db));
 
     // Create and fill `datasets` table.
-    db.exec(`
+    await db_exec(`
 create table "datasets" (
     "slug" text,
     "title" text not null,
@@ -28,7 +36,7 @@ create table "datasets" (
     "url" text not null,
     "sourceCodeUrl" text,
     primary key("slug")
-) without rowid;
+);
 `);
 
     const insertDataset = db.prepare(`
@@ -38,14 +46,14 @@ values (?, ?, ?, ?, ?);
     for (const d of datasets) insertDataset.run(d.slug, d.title, d.description, d.url, d.sourceCodeUrl);
 
     // Create and fill `requests` table.
-    db.exec(`
+    await db_exec(`
 create table "requests" (
     "id" text,
     "dataset" text,
     "initiator" text,
     "platform" text not null,
     "runType" text,
-    "startTime" text not null,
+    "startTime" timestamptz not null,
     "method" text not null,
     "httpVersion" text,
     "endpointUrl" text not null,
@@ -58,12 +66,12 @@ create table "requests" (
     "cookies" text not null,
     foreign key("dataset") references "datasets"("slug"),
     primary key("dataset", "id")
-) without rowid;
+);
 `);
 
-    for (const d of datasets) db.exec(`attach './datasets/${d.slug}.db' as '${d.slug}';`);
+    for (const d of datasets) await db_exec(`attach './datasets/${d.slug}.db' as "${d.slug}" (type sqlite);`);
 
-    db.exec(`
+    await db_exec(`
 insert into requests
     select id, dataset, initiator, platform, runType, startTime, method, httpVersion, endpointUrl, scheme, host, port, path, content, headers, cookies from (
         with vendors as materialized (
@@ -71,15 +79,17 @@ insert into requests
                 case
                     when initiator is null then null
                     when instr(initiator,'.') = 0 then initiator
+                    -- Regex taken from: https://regex101.com/r/jN6kU2/1
+                    -- when instr(initiator,'@') = 0 then regexp_extract(initiator, '^(?:https?:\\/\\/)?(?:[^@\\/\\n]+@)?(?:www\\.)?([^:\\/\\n]+)', 1)
                     when instr(initiator,'@') = 0 then url_host(initiator)
-                    else regex_replace('\\.[^.]+@.+?$', initiator, '')
+                    else regexp_replace(initiator, '\\.[^.]+@.+?$', '')
                 end as vendor,
                 -- For the 'do-they-track' requests, we don't know the scheme, so we guess 'https'. That is reasonable considering that less than 0.5 % of requests in the rest of the dataset use 'http'.
-                coalesce(endpointUrl, regex_replace('\\?.+$', coalesce(scheme, 'https://') || host || path, '')) as endpointUrl,
+                coalesce(endpointUrl, regexp_replace(coalesce(scheme, 'https://') || host || path, '\\?.+$', '')) as endpointUrl,
                 -- For counting the endpoints, it doesn't make sense to consider the scheme in either case.
-                regex_replace('\\?.+$', host || path, '')  as _endpointForCounting
+                regexp_replace(host || path, '\\?.+$', '')  as _endpointForCounting
             from (
-                ${datasets.map((d) => `select * from '${d.slug}'.requests`).join('\nunion all\n')}
+                ${datasets.map((d) => `select * from "${d.slug}".requests`).join('\nunion all\n')}
             )
         )
 
@@ -99,8 +109,4 @@ insert into requests
             and (not platform = 'ios' or initiator is not null)
     );
 `);
-
-    // Create indexes to speed up facets (https://docs.datasette.io/en/stable/facets.html#speeding-up-facets-with-indexes).
-    for (const facetColumn of ['method', 'dataset', 'runType', 'scheme', 'platform'])
-        db.exec(`create index "requests_${facetColumn}" on "requests"("${facetColumn}");`);
 })();
