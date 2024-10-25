@@ -2,7 +2,7 @@
     {
         "slug": "web-monkey-september-2024",
         "title": "Traffic collection for TrackHAR adapter work on websites (September 2024)",
-        "description": "To start creating TrackHAR adapters for trackers active on the web, Benni a traffic collection on the top 10,000 websites in Germany as per the Chrome User Experience Report (CrUX) for August 2024.\n\nThe websites were accessed in a headless Chromium browser using Playwright from a French IP address. All websites were accessed twice for 60 seconds each: The first time without any user interaction, the second time random user input was provided, meaning that it is possible/likely that consent was given when requested.",
+        "description": "To start creating TrackHAR adapters for trackers active on the web, Benni ran a traffic collection on the top 1,000 websites in Germany as per the Chrome User Experience Report (CrUX) for August 2024.\n\nThe websites were accessed in a headless Chromium browser using Playwright from a French IP address between 2024-09-20 and 2024-09-26. All websites were accessed twice for 60 seconds each: The first time without any user interaction, the second time random user input was provided, meaning that it is possible/likely that consent was given when requested.\n\nA larger version of the dataset with the traffic from the top 10,000 websites is available for download: https://zenodo.org/records/13990110",
         "url": "https://github.com/tweaselORG/experiments/issues/3",
         "sourceCodeUrl": "https://github.com/tweaselORG/experiments/tree/main/web-monkey-september-2024"
     },
